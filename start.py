@@ -6,7 +6,7 @@ import main
 from tokenizer import tokenize
 
 
-def test_till_calculate_plagiarism_score():
+def test_tokenize():
     origin_text = 'the big cat is sleeping'
     susp_text = 'the cat is big'
 
@@ -15,7 +15,10 @@ def test_till_calculate_plagiarism_score():
 
     print(f'Raw text: {origin_text}')
     print(f'Tokenized text: {origin_tokens}')
+    return origin_tokens, susp_tokens
 
+
+def test_find_lcs_lenght_and_matrix(origin_tokens, susp_tokens):
     lcs_lenght = main.find_lcs_length(origin_tokens, susp_tokens)
     print('A length of the longest common subsequence for '
         f'{origin_text.upper()} and {susp_text.upper()}: {lcs_lenght}')
@@ -24,20 +27,13 @@ def test_till_calculate_plagiarism_score():
     longest_lcs = main.find_lcs(origin_tokens, susp_tokens, matrix)
     print(f'The longest common subsequence: {longest_lcs}')
 
-    score = main.calculate_plagiarism_score(lcs_lenght, susp_tokens)
-    print(f'The plagiarism score: {score:.2f}')
-    
-    
+    return lcs_lenght, matrix
+   
 
 def test_calculate_text_plagiarism_score():
-    origin_text = '''the cat is big
-the sun is beatiful
-the moon is rising'''.split('\n')
+    origin_text = '''the cat is big\nthe sun is beatiful\nthe moon is rising'''.split('\n')
+    susp_text = '''the big cat\nthe beatiful sun was rising\na moon will rise'''.split('\n')
     
-    susp_text = '''the big cat
-the beatiful sun was rising 
-a moon will rise'''.split('\n')
-
     origin_tokens = tokenize_by_lines(origin_text)
     susp_tokens = tokenize_by_lines(susp_text)
     
@@ -48,9 +44,10 @@ a moon will rise'''.split('\n')
                                                  susp_tokens)
 
     print(f'The text plagiarism score: {score:.2f}')
+    
+    return score
 
 
-
-
-test_till_calculate_plagiarism_score()
-test_calculate_text_plagiarism_score()
+origin_tokens, susp_tokens = test_tokenize()
+lcs_lenght, matrix = test_find_lcs_lenght_and_matrix(origin_tokens, susp_tokens)
+score = test_calculate_text_plagiarism_score()
