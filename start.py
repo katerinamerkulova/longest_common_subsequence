@@ -6,7 +6,7 @@ import main
 from tokenizer import tokenize
 
 
-def test_tokenize():
+def test_till_calculate_plagiarism_score():
     origin_text = 'the big cat is sleeping'
     susp_text = 'the cat is big'
 
@@ -14,40 +14,103 @@ def test_tokenize():
     susp_tokens = tokenize(susp_text)
 
     print(f'Raw text: {origin_text}')
-    print(f'Tokenized text: {origin_tokens}')
-    return origin_tokens, susp_tokens
+    print(f'Tokenized text: {origin_tokens}\n\n')
 
-
-def test_find_lcs_lenght_and_matrix(origin_tokens, susp_tokens):
-    lcs_lenght = main.find_lcs_length(origin_tokens, susp_tokens)
-    print('A length of the longest common subsequence for '
-        f'{origin_text.upper()} and {susp_text.upper()}: {lcs_lenght}')
+    lcs_lenght = main.find_lcs_length(origin_tokens,
+                                      susp_tokens,
+                                      plagiarism_threshold=0.0)
+    print('A length of the longest common subsequence for \n\n'
+        f'{origin_text} \n\nand \n\n{susp_text}: \n\n{lcs_lenght} \n')
 
     matrix = main.fill_lcs_matrix(origin_tokens, susp_tokens)
+    print('A matrix:')
+    print(*matrix, sep='\n', end='\n\n')
+
     longest_lcs = main.find_lcs(origin_tokens, susp_tokens, matrix)
     print(f'The longest common subsequence: {longest_lcs}')
 
-    return lcs_lenght, matrix
-   
+    score = main.calculate_plagiarism_score(lcs_lenght, susp_tokens)
+    print(f'The plagiarism score: {score:.2f}\n')
+    return score
 
 def test_calculate_text_plagiarism_score():
-    origin_text = '''the cat is big\nthe sun is beatiful\nthe moon is rising'''.split('\n')
-    susp_text = '''the big cat\nthe beatiful sun was rising\na moon will rise'''.split('\n')
-    
-    origin_tokens = tokenize_by_lines(origin_text)
-    susp_tokens = tokenize_by_lines(susp_text)
-    
-    while len(origin_text) < len(susp_text):
-        origin_text += ('',)
+    origin_text = '''the cat is big
+the sun is beatiful
+the moon is rising'''
+
+    susp_text = '''the big cat
+the beatiful sun was rising 
+a blue moon will rise'''
+
+    origin_tokens = main.tokenize_by_lines(origin_text)
+    susp_tokens = main.tokenize_by_lines(susp_text)
 
     score = main.calculate_text_plagiarism_score(origin_tokens,
                                                  susp_tokens)
 
-    print(f'The text plagiarism score: {score:.2f}')
-    
+    print('The text plagiarism score for \n\n'
+        f'{origin_text} \n\n and \n\n{susp_text}: \n\n{score:.2f}\n\n')
+    return score
+
+def test_find_diff():
+    origin_text = 'a big cat loves a small cat'
+    susp_text = 'a dog loves a cat'
+
+    origin_tokens = tokenize(origin_text)
+    susp_tokens = tokenize(susp_text)
+
+    matrix = main.fill_lcs_matrix(origin_tokens, susp_tokens)
+
+    lcs = main.find_lcs(origin_tokens, susp_tokens, matrix)
+
+    difference = main.find_diff_in_sentence(origin_tokens, susp_tokens, lcs)
+
+    print('The difference indexes between \n\n'
+        f'{origin_text} \n\n and \n\n{susp_text}: \n\n{difference}')
+    return difference
+
+def test_accumulated_stat_and_report():
+    origin_text = '''the cat is big
+the sun is beatiful
+the moon is rising'''
+
+    susp_text = '''the cat is big
+the beatiful sun was rising 
+a blue moon will rise'''
+
+    origin_tokens = main.tokenize_by_lines(origin_text)
+    susp_tokens = main.tokenize_by_lines(susp_text)
+
+    stat = main.accumulate_diff_stats(origin_tokens, susp_tokens)
+
+    print('The accumulated main statistics for pairs of sentences in texts: \n\n'
+        f'{origin_text} \n\n and \n\n{susp_text}: \n')
+    print(*stat.items(), sep='\n', end='\n\n')
+
+    report = main.create_diff_report(origin_tokens,
+                                     susp_tokens,
+                                     stat)
+    print(f'A report:\n\n{report}\n')
+    return report
+
+def text_plagiarism_score_for_big_files():
+    sentence_tokens_first_text = main.tokenize_big_file('lab_2/data.txt')
+    sentence_tokens_second_text = main.tokenize_big_file('lab_2/data_2.txt')
+    plagiarism_threshold = 0.0001
+
+    lcs_length = main.find_lcs_length_optimized(sentence_tokens_first_text,
+                                                sentence_tokens_second_text,
+                                                plagiarism_threshold)
+    score = lcs_length / len(sentence_tokens_second_text)
+
+    print(f'The text plagiarism score for big files: {score:.2f}\n\n')
     return score
 
 
-origin_tokens, susp_tokens = test_tokenize()
-lcs_lenght, matrix = test_find_lcs_lenght_and_matrix(origin_tokens, susp_tokens)
-score = test_calculate_text_plagiarism_score()
+if __name__ == '__main__':
+    #RESULT = test_till_calculate_plagiarism_score()
+    #RESULT = test_calculate_text_plagiarism_score()
+    #RESULT = test_find_diff()
+    RESULT = test_accumulated_stat_and_report()
+    #RESULT = text_plagiarism_score_for_big_files()
+    assert RESULT, 'Plagiarism checker not working'
