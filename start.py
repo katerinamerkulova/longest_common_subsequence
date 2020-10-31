@@ -94,8 +94,8 @@ a blue moon will rise'''
     return report
 
 def text_plagiarism_score_for_big_files():
-    sentence_tokens_first_text = main.tokenize_big_file('lab_2/data.txt')
-    sentence_tokens_second_text = main.tokenize_big_file('lab_2/data_2.txt')
+    sentence_tokens_first_text = main.tokenize_big_file('data.txt')[:3000]
+    sentence_tokens_second_text = main.tokenize_big_file('data_2.txt')[:3000]
     plagiarism_threshold = 0.0001
 
     lcs_length = main.find_lcs_length_optimized(sentence_tokens_first_text,
@@ -111,6 +111,6 @@ if __name__ == '__main__':
     #RESULT = test_till_calculate_plagiarism_score()
     #RESULT = test_calculate_text_plagiarism_score()
     #RESULT = test_find_diff()
-    RESULT = test_accumulated_stat_and_report()
-    #RESULT = text_plagiarism_score_for_big_files()
-    assert RESULT, 'Plagiarism checker not working'
+    #RESULT = test_accumulated_stat_and_report()
+    RESULT = text_plagiarism_score_for_big_files()
+    assert RESULT == 0.13 'Plagiarism checker not working'
